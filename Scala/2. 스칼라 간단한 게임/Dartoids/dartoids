@@ -1,1 +1,0 @@
-scala -cp /home/jewoosuh/local/scalalib/app.jar:/home/jewoosuh/local/scalalib/scala-swing.jar:/home/jewoosuh/local/scalalib/scalacheck.jar:bin ox.games.Dartoids "$@"
