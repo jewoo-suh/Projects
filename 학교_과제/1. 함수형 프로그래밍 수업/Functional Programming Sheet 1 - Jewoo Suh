@@ -1,0 +1,164 @@
+1.1 
+	(1) a plus f(x) + (x times y) * z
+	(2) (3 * 4) + 5 + 6
+	(3) 2^(2^(2^2))
+
+1.2 
+	We define three functions: f, g, and h
+	f: X -> Y
+	g: Y -> Z
+	h: Z -> W
+
+	First we consider the compositions g∘f and h∘g
+	g∘f: g(x -> Y): X -> Z
+	h∘g: h(y -> Z): Y -> W
+
+	Now we consider the compositions h∘(g∘f) and (h∘g)∘f
+	h∘(g∘f): h(X -> Z): X -> W
+	(h∘g)∘f: (Y -> W)(X -> Y): X -> W
+
+	We notice that both h∘(g∘f) and (h∘g)∘f map X -> W, thus they are equal. 
+
+1.3 
+	(1) Associative: 
+		(A ++ B) ++ C = AB ++ C = ABC
+		A ++ (B ++ C) = A ++ BC = ABC
+		The results show that (A ++ B) ++ C = A ++ (B ++ C). Thus this operator is associative. 
+	(2) Commutative: 
+		A ++ B = AB
+		B ++ A = BA
+		The results show that A ++ B /= B ++ A. Thus this operator is not commutative. 
+	(3) Unit/Identity Element
+		A ++ "" = A 
+		"" ++ A = A
+		The results show that A ++ "" = A = "" ++ A. Thus this operator has an identity element.
+	(4) Zero
+		z ++ X = zX
+		X ++ z = Xz
+		The calculaions above show that regardless of z, it is impossible for the operator to become z ++ X = z = X ++ z, as the X will always be in part of the final calculation. 
+
+1.4 
+	(1) (i)   map double [3,7,4,2] = [6,14,8,4]
+		(ii)  map (double.double) [3,7,4,2] = [12,28,16,8]
+		(iii) map double [] = []
+
+	(2) (i)   We define A as a list of n Integers: A = [a1, a2, a3, ..., an]. Then, 
+
+			  sum.map double A 
+			  = sum.map double [a1, a2, a3, ..., an]
+			  = sum.map [2*a1, 2*a2, 2*a3, ..., 2*an]
+			  = 2*a1 + 2*a2 + 2*a3 + ... + 2*an
+
+			  double.sum A
+			  = double.sum [a1, a2, a3, ..., an]
+			  = double (a1 + a2 + a3 + ... + an)
+			  = 2*(a1 + a2 + a3 + ... + an)
+			  = 2*a1 + 2*a2 + 2*a3 + ... + 2*an = sum.map double A, 
+
+			  Thus sum.map double = double.sum 
+
+		(ii)  We define Bn = [[a1_1, a1_2, a1_3, ..., a1_k1], 
+							  [a2_1, a2_2, a2_3, ..., a2_k2], 
+							  [a3_1, a3_2, a3_3, ..., a3_k3], 
+							  ..., 
+							  [an_1, an_2, an_3, ..., an_kn]] Then, 
+
+			  sum.map sum Bn
+			  = sum.map [sigma(1<=i<=k1) a1_i, sigma(1<=i<=k2) a2_i, sigma(1<=i<=k3) a3_i, ..., sigma(1<=i<=kn) an_i]
+			  = sigma(1<=i<=n) (sigma(1<=j<=ki) ai_j)
+
+			  sum.concat Bn
+			  = sum [a1_1, a1_2, ..., a1_k1, a2_1, a2_2, ..., a2_k2, a3_1, a3_2, ..., a3_k3, ..., an_1, an_2, ..., an_kn]
+			  = sigma(1<=i<=n) (sigma(1<=j<=ki) ai_j) = sum.map sum Bn
+
+			  Thus sum.map sum = sum.concat
+
+		(iii) We define A as a list of n Integers: A = [a1, a2, a3, ..., an]. Then,
+
+			  sum.sort A
+			  = sum [b1, b2, b3, ..., bn] 					--> where B=A and b1<=b2<=b3<=...<=bn 
+			  = sigma(1<=i<=n) bi = sigma(1<=i<=n) ai       --> since B=A
+
+			  sum A
+			  = sum [a1, a2, a3, ..., an]
+			  = sigma(1<=i<=n) ai
+
+			  Thus sum.sort = sum
+
+2.1 Included on FP_Sheet1.lhs File
+
+2.2 Included on FP_Sheet1.lhs File
+
+2.3 
+	(1) Bool -> Bool 
+		For any Bool given, there are two possible cases; either the Bool is True or False.
+		Then, for Bool -> Bool, we consider the table below
+
+		Bool -> Bool
+		 T 	 	 T
+		 F 	 	 F
+
+		In order to visualize the function Bool -> Bool, from each of the T and F on the left side we extend one arrow  that leads to either the T or F on the right side. Then, we have 4 possible cases, or things of type Bool -> Bool:
+
+		T -> T     |     T -> T     |     T -> F     |     T -> F
+		F -> T     |     F -> F     |     F -> T     |     F -> F
+
+	(2) Bool -> Bool -> Bool
+		For Bool -> Bool -> Bool, we consider a similar table to (1), pictured below
+
+		Bool -> Bool -> Bool
+		 T 	 	 T 		 T
+		 F 	 	 F 		 F
+
+		Similar to the process depicted in (1), we have to make arrows between each column that connect the T and F on the left side to either the T or F on the right side. As calculated above, there are 4 possible ways of placing/connecting arrows between two columns, and there are 2 spaces between columns where arrows have to be placed; thus in total there are 4 * 4 = 16 possible cases/things of type Bool -> Bool -> Bool
+
+	(3) Bool -> Bool -> Bool -> Bool
+		Similar to parts (1) and (2), we create a table:
+
+		Bool -> Bool -> Bool -> Bool
+		 T 	 	 T 		 T 		 T
+		 F 	 	 F 		 F  	 F
+
+		 Here, there are 4 columns total with 3 spaces in-between adjacent columns. Again, there are 4 possible ways of connecting arrows in-between adjacent columns, thus in total there are 4 * 4 * 4 = 64 possible cases/things of type Bool -> Bool -> Bool -> Bool
+
+	(4) (Bool, Bool)
+		As shown in (1), there are two possible cases for any given Bool: True or False
+		Thus for (Bool, Bool), there are a total of 4 possible cases
+
+		(True, True) | (True, False) | (False, True) | (False, False)
+
+		Thus there are 4 things of type (Bool, Bool)
+
+	(5) (Bool, Bool) -> Bool
+		As shown in (4), there are 4 types of (Bool, Bool), and using a table similar to that of (2) and (3), 
+
+		(Bool, Bool) -> Bool
+		   (T, T)  		 
+		   (T, F)  		 T
+		   (F, T)  		 F
+		   (F, F)  		 
+
+		Similarly, in between the columns we would like to connect each of the elements on the left side with exactly one of the elements on the right side. For each of the 4 elements on the left, there are 2 possible elements on the right which they can be connected to - either T or F. Thus in total there are 2 * 2 * 2 * 2 = 2^4 = 16 possible cases/things of type (Bool, Bool) -> Bool
+
+	(6) (Bool, Bool, Bool)
+		Similar to (4), for each Bool there are two possibilities, and there are 3 Bools total thus there are 2 * 2 * 2 = 2^3 = 8 possible cases/things of type (Bool, Bool, Bool)
+
+	(7) (Bool, Bool, Bool) -> Bool
+		Similar to (5), there are a total of 8 types of (Bool, Bool, Bool) that can be connected to 2 possible cases of Bool - True or False - for a total of 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 *= 2^8 = 256 possible cases/types of (Bool, Bool, Bool) -> Bool
+
+	(8) (Bool -> Bool) -> Bool
+		In part (1), we have already calculated that there are 4 possible types of (Bool -> Bool). Depicting this in a table, 
+
+		(Bool -> Bool) -> Bool
+		   (T -> T)		   
+		   (T -> F)		   T
+		   (F -> T)		   F
+		   (F -> F)		   
+
+		Similar to part (5), there are 4 elements on the left that each need to be connected to exactly one element out of the 2 elements on the right. Thus, in total there are 2 * 2 * 2 * 2 = 2^4 = 16 possible cases/things of type (Bool -> Bool) -> Bool
+
+	(9) (Bool -> Bool -> Bool) -> Bool
+		In part (2), we have already calculated that there are 16 possible things with type Bool -> Bool -> Bool. Thus, as described in part (8), 16 elements on the left have to be connected to exactly one element out of the 2 elements on the right. Thus, in total there are 2 * 2 * ... * 2 * 2 = 2^16 = 65536 possible cases/things of type (Bool -> Bool -> Bool) -> Bool
+
+    (10) ((Bool -> Bool) -> Bool) -> Bool
+    	In part (8), we have already calculated that there are 16 possible cases/things of type (Bool -> Bool) -> Bool. Now similar to parts (8) and (9), 16 elements on the left have to be connected to exactly one element out of the 2 elements on the right. Thus, in total there are 2 * 2 * ... * 2 * 2 = 2^16 = 65536 possible cases/things of type ((Bool -> Bool) -> Bool) -> Bool

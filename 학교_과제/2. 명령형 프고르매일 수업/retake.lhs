@@ -1,0 +1,1135 @@
+2012 FP
+
+1-(a)
+
+> map1 :: (a -> b) -> [a] -> [b] 
+> map1 f xs = [f x | x <- xs]
+
+> concat1 :: [[a]] -> [a] 
+> concat1 [[]] = [] 
+> concat1 (xs:xss) = xs ++ concat1 xss
+
+> curry1 :: ((a, b) -> c) -> a -> b -> c 
+> curry1 f x y = f (x, y)
+
+> testDef :: (Int, Int) -> Int
+> testDef (x, y) = x * y
+
+> uncurry1 :: (a -> b -> c) -> (a, b) -> c 
+> uncurry1 f (x, y) = f x y
+
+1-(b)
+
+(i) map concat :: [[[a]]] -> [[a]]
+
+(ii) f x y z = x (x z) y
+	 f :: (a -> b -> a) -> b -> (a -> b) -> a
+
+1-(c)
+
+> pascal :: [[Int]] 
+> pascal = (iterate f [1,1])
+>  	where f xs = [1] ++ [xs!!n + xs!!(n+1) | n <- [0..(length(xs)-2)]] ++ [1]
+
+2 - a
+
+> concat2 :: [[a]] -> [a] 
+> concat2 xss = foldr (++) [] xss
+
+3 - c
+
+> removedup::Eq a => [a] -> [a]
+> removedup r = foldr addnew [] r
+> 	where addnew x xs = if elem x xs then xs else x:xs
+
+> relcomp:: Eq a => [(a,a)] -> [(a,a)] -> [(a,a)]
+> relcomp r1 r2 = removedup [(a,b)|(a,c1)<- r1, (c2,b)<- r2, c1==c2]
+
+> data RTree a = Node a [RTree a]
+
+> exampleRTree :: RTree Integer
+> exampleRTree = Node 1 [ 	Node 2 [Node 3 [], Node 4 []],
+> 							Node 5 [],
+> 							Node 6 [Node 7 []]]
+
+> exampleRTree2 :: RTree Integer
+> exampleRTree2 = Node 1 [ 	Node 2 [Node 3 []],
+> 							Node 5 [Node 5 []],
+> 							Node 6 [Node 7 []]]
+
+> exampleRTree3 :: RTree Integer
+> exampleRTree3 = Node 1 [ 	Node 2 [Node 3 [], Node 5 []],
+> 							Node 5 [Node 5 [], Node 5 []],
+> 							Node 6 [Node 7 [], Node 5 []]]
+
+> exampleRTree4 :: RTree Integer
+> exampleRTree4 = Node 1 [ 	Node 2 [Node 3 [], Node 5 []],
+> 							Node 5 [Node 5 [], Node 5 []],
+> 							Node 6 [Node 7 [], Node 5 []], Node 1 []]
+
+> exampleRTree5 :: RTree Integer
+> exampleRTree5 = Node 1 [ 	Node 2 [Node 3 [], Node 5 []],
+> 							Node 5 [Node 5 []]]
+
+> exampleRTree6 :: RTree Integer
+> exampleRTree6 = Node 1 [ 	Node 2 [Node 3 [Node 5 []]],
+> 							Node 5 [Node 5 [Node 5 []]],
+> 							Node 6 [Node 7 [Node 5 [Node 5 []]]]]
+
+
+> foldRTree :: (a -> [b] -> b) -> RTree a -> b
+> foldRTree f (Node x xs) = f x (map (foldRTree f) xs)
+
+> data Zig a b = Nil | Cins a (Zag b a) deriving Show
+> data Zag a b = Nal | Cans a (Zig b a) deriving Show
+
+> exampleZig :: Zig Integer Char 
+> exampleZig = Cins 1 (Cans 'A' (Cins 2 Nal))
+
+> exampleZag :: Zag String Bool 
+> exampleZag = Cans "C" (Cins True (Cans "D" Nil))
+
+> headZig :: Zig a b -> a 
+> headZig Nil = error("NO") 
+> headZig (Cins x zag) = x 
+
+> headZag :: Zag a b -> a 
+> headZag Nal = error("NO")
+> headZag (Cans x zig) = x
+
+> data ZigOrZagType a b = ZigType a | ZagType b deriving Show
+
+> lastZig :: Zig a b -> ZigOrZagType a b 
+> lastZig (Cins x Nal) = ZigType x  
+> lastZig (Cins x zag) = lastZag zag 
+
+> lastZag :: Zag a b -> ZigOrZagType b a 
+> lastZag (Cans x Nil) = ZagType x  
+> lastZag (Cans x zig) = lastZig zig 
+
+> mapZig :: (a -> c) -> (b -> d) -> Zig a b -> Zig c d
+> mapZig f g Nil = Nil 
+> mapZig f g (Cins x Nal) = Cins (f x) Nal
+> mapZig f g (Cins x zag) = Cins (f x) (mapZag g f zag)
+
+> mapZag :: (a -> c) -> (b -> d) -> Zag a b -> Zag c d
+> mapZag f g Nal = Nal 
+> mapZag f g (Cans x Nil) = Cans (f x) Nil
+> mapZag f g (Cans x zig) = Cans (f x) (mapZig g f zig)
+
+> type Matrix a = [[a]] 
+
+> matrix221 :: Matrix Int
+> matrix221 = [[1,2],[3,4]]
+
+> matrix222 :: Matrix Int
+> matrix222 = [[1,1],[1,1]]
+
+> matrix231 :: Matrix Int
+> matrix231 = [[1,2,3],[4,5,6]]
+
+> addMat :: Num a => Matrix a -> Matrix a -> Matrix a 
+> addMat xss yss 	| length(xss) /= length(yss) 											
+>  							= error("Non-compatible")
+>  					| (or) [length(xss!!n) /= length(yss!!n) | n <- [0..length(xss)-1]] 	
+>  							= error("Non-compatible")
+>  					| otherwise 															
+>  							= [[xss!!r!!c + yss!!r!!c | c <- [0..length(xss)-1]] | r <- [0..length(xss)-1]]
+
+> addMat2 :: Num a => Matrix a -> Matrix a -> Matrix a 
+> addMat2 xss yss 	| length(xss) /= length(yss) 											
+>  							= error("Non-compatible")
+>  					| (or) [length(xss!!n) /= length(yss!!n) | n <- [0..length(xss)-1]] 	
+>  							= error("Non-compatible")
+>  					| otherwise 															
+>  							= zipWith (zipWith (+)) xss yss
+
+> transpose :: Matrix a -> Matrix a
+> transpose ([]:_) = []
+> transpose xss = map head xss : transpose (map tail xss)
+
+> multMat :: Num a => Matrix a -> Matrix a -> Matrix a 
+> multMat xss yss 	| length(xss) /= length(ssy) 											
+>  							= error("Non-compatible")
+>  					| (or) [length(xss!!n) /= length(ssy!!n) | n <- [0..length(xss)-1]] 	
+>  							= error("Non-compatible")
+>  					| otherwise 															
+>  							= [[dotP (xss!!n) (ssy!!m) | n <- [0..length(xss)-1]] | m <- [0..length(xss)-1]]
+>  	where 	ssy = transpose yss
+
+> dotP :: Num a => [a] -> [a] -> a
+> dotP xs ys = sum (zipWith (*) xs ys)
+
+> mulable xss yss = length (xss!!0) == length yss || error "incompatible matrices"
+
+> seriesMat :: Num a => Matrix a -> [Matrix a] 
+> seriesMat m = iterate (\x -> addMat (multMat x m) m) m
+
+> seriesMat2 :: Num a => Matrix a -> [Matrix a] 
+> seriesMat2 m = scanl1 f (iterate id m)
+>  	where f e x = addMat (multMat e m) x
+
+> pascal1 :: [[Int]]
+> pascal1 = iterate f [1] 
+>  	where f x = zipWith (+) (x ++ [0]) (0:x)
+
+> merge :: Ord a => [a] -> [a] -> [a] 
+> merge xs ys 	| null xs  		= ys 
+>  				| null ys 		= xs 
+>  				| x < y 		= x : merge (tail xs) ys
+>  				| x == y  		= x : merge (tail xs) (tail ys)
+>  				| otherwise 	= y : merge xs (tail ys)
+>  	where x = head xs; y = head ys
+
+> hamming :: [Int] 
+> hamming = [1] ++ merge (map (*5) hamming) (merge (map (*2) hamming) (map (*3) hamming))
+
+> hamming' :: [Int] -> [Int] 
+> hamming' xs = [1] ++ foldr1 merge (map (\x -> map (*x) (hamming' xs)) xs)
+
+> data Op = Add | Sub | Mul | Div deriving Show
+> data Expr = Num Int | App Op Expr Expr deriving Show
+
+> exampleExpr :: Expr 
+> exampleExpr = App Sub (App Mul (App Div (Num 4) (Num 2)) (Num 24)) (App Add (Num 4) (Num 2))
+
+> data Elem = Nm Int | Oper Op deriving Show
+
+> type Polish = [Elem] 
+> type RPolish = [Elem] 
+
+> convert :: Expr -> RPolish
+> convert (Num x) = [Nm x] 
+> convert (App op expr1 expr2) = (convert expr1) ++ (convert expr2) ++ [Oper op]
+
+> type State = String 
+> type Rule = (Char, String)
+
+> exampleRules :: [Rule]
+> exampleRules = [('A', "BC"), ('B', "AC"), ('C', "AB")]
+
+> applyRule :: [Rule] -> Char -> String
+> applyRule [] c = error("No Rule")
+> applyRule (x:xs) c 	| fst(x) == c && not(elem c (map fst xs)) 	= snd(x) 
+>  						| fst(x) == c  								= error("Too many rules")
+>  						| otherwise  								= applyRule xs c
+
+> step :: [Rule] -> State -> State
+> step _ [] = ""
+> step xs (c:str) = (applyRule xs c) ++ (step xs str)
+
+> runSystem :: (State, [Rule]) -> [State]
+> runSystem (x, rules) 	| null(x) 	= []
+>  						| otherwise = x : runSystem(step rules x, rules)
+
+> isPrefix :: Eq a => [a] -> [a] -> Bool 
+> isPrefix xs ys 	| length(xs) > length(ys) 	= False 
+> 					| null(xs) 					= True 
+>  					| head(xs) /= head(ys) 		= False 
+>  					| otherwise 				= isPrefix (tail(xs)) (tail(ys))
+
+> findStates :: [State] -> String -> [(State, Int)] 
+> findStates [] str = [] 
+> findStates xs str = [ (xs!!n, n) | n <- [0.. length(xs)-1], isPrefix str (xs!!n)] 
+
+> triplets :: [(Int, Int, Int)] 
+> triplets = [(x, y, z) | w <- [0..], x <- [0..w], y <- [0..w], z <- [0..w], x + y + z == w]
+
+> sieve :: [Int] -> [Int]
+> sieve (x:xs) = x : filter (f x) xs 
+>  	where f x y = (y `mod` x /= 0) 
+
+> primes :: [Int] 
+> primes = primes' (sieve [2..])
+
+> primes' :: [Int] -> [Int] 
+> primes' (x:xs) = x : primes' (sieve xs)
+
+> ptype :: [(Int, Int, Int)] 
+> ptype = ptype' (sieveTriplet xs) 
+> 	where xs = [(x, y, z) | w <- [1..], z <- [1..w], y <- [1..z], x <- [1..y], x*x + y*y == z*z]
+
+> ptype' :: [(Int, Int, Int)] -> [(Int, Int, Int)] 
+> ptype' (x:xs) = x : ptype' (sieveTriplet xs)
+
+> sieveTriplet :: [(Int, Int, Int)] -> [(Int, Int, Int)] 
+> sieveTriplet (x:xs) = x : filter (f x) xs 
+> 	where f (a1, b1, c1) (a2, b2, c2) = (mod a2 a1 /= 0) || (mod b2 b1 /= 0) || (mod c2 c1 /= 0) 
+
+> type Grid = Matrix Int
+
+> exampleGrid :: Grid 
+> exampleGrid = [[1,2],[3],[4,5]]
+
+> choices :: Grid -> Matrix [Int]
+> choices xss = [[if x == 0 then [1,2,3,4,5,6,7,8,9] else [x] | x <- xs] | xs <- xss]
+
+> cp :: [[a]] -> [[a]] 
+> cp [] = [[]]
+> cp [[]] = []
+> cp (xs:xss) = [x:ys | x <- xs, ys <- cp xss]
+
+> cp2 :: [[a]] -> [[a]] 
+> cp2 = foldr f [[]]
+>  	where f xs ys = [x:y | x <- xs, y <- ys]
+
+> expand :: Matrix [a] -> [Matrix a]
+> expand xsss = cp2 ((map cp2) xsss)
+
+> complete :: Grid -> Bool 
+> complete xss = True 
+
+> solve :: Grid -> Grid 
+> solve grid = head (filter (complete) (expand (choices grid)))
+
+> prune :: Matrix [Int] -> Matrix [Int]
+> prune = id
+
+> solve2 :: Grid -> Grid 
+> solve2 grid = head (filter (complete) (prune (expand (prune (choices grid)))))
+
+> inits :: [a] -> [[a]] 
+> inits xs = inits' (reverse xs) 
+
+> inits' :: [a] -> [[a]] 
+> inits' [] = [[]] 
+> inits' xs = inits' (tail xs) ++ [reverse xs]
+
+> data Natural = Zero | Succ Natural
+
+> data BSTree a = Null | Node1 (BSTree a) a (BSTree a) deriving (Show, Eq)
+
+> exampleBinTree :: BSTree Int 
+> exampleBinTree = Node1 (Null) 1 (Node1 Null 2 Null)
+
+> exampleBinTree2 :: BSTree Int 
+> exampleBinTree2 = Node1 (Node1 Null 3 Null) 2 (Node1 Null 4 Null)
+
+> insertBSTree :: Eq a => BSTree a -> a -> BSTree a 
+> insertBSTree Null x = Node1 Null x Null
+> insertBSTree (Node1 tr1 a1 tr2) x	| (tr1 == Null) && (tr2 == Null) 	= Node1 (Node1 Null x Null) a1 tr2 
+>  									| (tr1 == Null) 					= Node1 (Node1 Null x Null) a1 tr2 
+>  									| (tr2 == Null)						= Node1 tr1 a1 (Node1 Null x Null)
+>  									| otherwise  						= Node1 (insertBSTree tr1 x) a1 tr2
+
+> mergeBSTree :: Ord a => BSTree a -> BSTree a -> BSTree a 
+> mergeBSTree Null Null = Null 
+> mergeBSTree Null tr2 = tr2 
+> mergeBSTree tr1 Null = tr1 
+> mergeBSTree (Node1 tr11 x tr12) (Node1 tr21 y tr22)	| x > y 	= insertBSTree (mergeBSTree (mergeBSTree tr11 tr12) tr2) x 
+>  														| x == y 	= insertBSTree (mergeBSTree (mergeBSTree tr11 tr12) (mergeBSTree tr21 tr22)) x 
+>  														| x < y 	= insertBSTree (mergeBSTree tr1 (mergeBSTree tr21 tr22)) y 
+> 	where {tr1 = (Node1 tr11 x tr12) ; tr2 = (Node1 tr21 y tr22)}
+
+> map11 :: (a -> b) -> [a] -> [b] 
+> map11 f [] = [] 
+> map11 f (x:xs) = f x : map1 f xs
+
+> applyAll :: [(a -> b)] -> a -> [b] 
+> applyAll [] y = [] 
+> applyAll (x:xs) y = x y : applyAll xs y 
+
+> applyAll' :: [(a -> b)] -> a -> [b] 
+> applyAll' flist x = map ((\x f -> f x) x) flist
+
+> take1 :: Int -> [a] -> [a] 
+> take1 n xs 	| n >= length xs 	= xs 
+>  				| n == 0  			= [] 
+>  				| otherwise 		= head xs : take1 (n-1) (tail xs)
+
+> drop1 :: Int -> [a] -> [a] 
+> drop1 n xs 	| n >= length xs 	= [] 
+> 			 	| n == 0 			= xs 
+> 				| otherwise  		= drop1 (n-1) (tail xs) 
+
+> evens :: [a] -> [a] 
+> evens [] = [] 
+> evens [x] = [] 
+> evens (x:y:xs) = y : evens xs 
+
+> odds :: [a] -> [a] 
+> odds [] = [] 
+> odds [x] = [x]
+> odds (x:xs) = x : evens xs
+
+> alts :: [a] -> ([a],[a]) 
+> alts [] = ([],[]) 
+> alts [x] = ([],[x]) 
+> alts (x:y:xs) = (\sp lp -> ((fst sp : fst lp), (snd sp : snd lp))) (y,x) (alts xs)
+
+> zipWith1 :: (a -> b -> c) -> [a] -> [b] -> [c] 
+> zipWith1 f xs ys = map (uncurry f) (zip xs ys)
+
+> zipWith2 :: (a -> b -> c) -> [a] -> [b] -> [c] 
+> zipWith2 f _ [] = [] 
+> zipWith2 f [] _ = [] 
+> zipWith2 f (x:xs) (y:ys) = f x y : zipWith2 f xs ys
+
+> zip1 :: [a] -> [b] -> [(a,b)]
+> zip1 xs ys = zipWith2 (\x y -> (x, y)) xs ys
+
+> splits :: [a] -> [(a,[a])] 
+> splits xs = [ (xs!!n, take n xs ++  drop (n+1) xs) | n <- [0..(length(xs)-1)]]
+
+> permutations :: [a] -> [[a]]
+> permutations [] = [[]]
+> permutations xs = [x:zs | (x,ys) <- splits xs, zs <- permutations ys]
+
+> permutations' :: [a] -> [[a]] 
+> permutations' xs = foldr f [[]] xs
+>  	where f x xss 	| null xss  	= [[x]]
+>  					| otherwise 	= concat [[(take n xs) ++ [x] ++ (drop n xs) | n <- [0..(length xs)]] | xs <- xss]
+
+> include :: a -> [a] -> [[a]]
+> include x [] = [[x]] 
+> include x (y:ys) = (x:y:ys) : map (y:) (include x ys)
+
+> include'':: a -> [a] -> [[a]]
+> include'' x xs = [take n xs ++ [x] ++ drop n xs | n <- [0..(length xs)]]
+
+> include' :: a -> [a] -> [[a]]
+> include' x xs = foldr f [[x]] xs 
+> 	where f x xss = map (x:) xss
+
+> unfold :: (a->Bool) -> (a->b) -> (a->a) -> a -> [b]
+> unfold null head tail = map head . takeWhile (not.null) . iterate tail
+
+> data BTree a = Fork (BTree a) a (BTree a) | Empty deriving Show
+
+> exampleBTree :: BTree [Int] 
+> exampleBTree = Fork Empty [1,2] (Fork Empty [4,7] Empty)
+
+> insertBTree :: Ord a => a -> BTree [a] -> BTree [a] 
+> insertBTree x Empty = Fork Empty [x] Empty 
+> insertBTree x (Fork tl xs tr)	| x < minimum xs 	= Fork (insertBTree x tl) xs tr
+>  								| x > maximum xs 	= Fork tl xs (insertBTree x tr)
+>  								| otherwise 		= Fork tl (x:xs) tr
+
+> cpN :: [[a]] -> [[a]]
+> cpN [] = [[]]
+> cpN (xs:xss) = [ x:ys | x <- xs, ys <- cpN xss ]
+
+> cpF :: [[a]] -> [[a]] 
+> cpF xss = foldr f [[]] xss
+>  	where f xs xss = [x:ys | x <- xs, ys <- xss]
+
+> cols :: [[a]] -> [[a]]
+> cols [xs] = [ [x] | x <- xs ]
+> cols (xs:xss) = zipWith (:) xs (cols xss)
+
+> cols' :: [[a]] -> [[a]] 
+> cols' (xs:xss) = foldr ( (zipWith (\x ys -> ys ++ [x])) ) [ [x] | x <- xs ] (reverse xss)
+
+> data Nat1 = Zero1 | Succ1 Nat1
+
+> int1 :: Nat1 -> Int 
+> int1 Zero1 = 0 
+> int1 (Succ1 nat) = 1 + int1 nat
+
+> nat :: Int -> Nat1 
+> nat 0 = Zero1 
+> nat n = Succ1 (nat (n-1))
+
+> data Liste a = Snoc (Liste a) a | Lin
+
+> exLis :: Liste Int 
+> exLis = Snoc (Snoc (Snoc Lin 2) 4) 5
+
+> folde :: a -> (a -> a) -> Liste b -> a 
+> folde x _ Lin = x 
+> folde x f (Snoc (l2) a2) = folde (f x) f l2
+
+> foldeN :: b -> (b -> a -> b) -> Liste a -> b 
+> foldeN lin snoc Lin = lin 
+> foldeN lin snoc (Snoc liste x) = snoc (foldeN lin snoc liste) x
+
+> fib 0 = 0 
+> fib 1 = 1 
+> fib n = fib (n-1) + fib (n-2) 
+
+> two' :: Int -> (Int, Int)
+> two' 0 = (0, 1) 
+> two' n = (fst (two' (n-1)) + snd (two' (n-1)), snd (two' (n-1)) + fst (two' n))
+
+> two :: (Int, Integer, Integer) -> Int -> (Int, Integer, Integer)
+> two (currentN, x, y) n = if currentN < n then two (currentN + 1, y, x + y) n else (currentN, x, y)
+
+> third :: (x,y,z) -> z
+> third (x,y,z) = z
+
+> fib' :: Int -> Integer
+> fib' n = third (two (0,0,1) n)
+
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+Design and Analysis of Algorithms (DAA) Revision Notes
+
+1. Program Cost and Asymptotic Notation
+
+- No Jewoo, getting a better computer is not a good solution
+
+- Correctness Proof: Loop Invariant Approach
+
+	Three main components: Initialization, Maintenance, Termination
+		
+		Initialization: Prove invariant (I) holds before iteration
+		Maintenance: I holds right before iteration => I holds right after iteration
+		Termination: I && Reason of termination imply correctness
+		-> Basically Induction but limited
+
+- Runtime Analysis
+
+	SUM ( cost x # run time) => O(f(n)) [Big O Notation]
+
+2. Divide and Conquer Algorithms
+
+- Divide and Conquer 
+
+	1. Break problem into subproblems
+	2. Recursively solve those problems
+	3. Appropriately combining those answers
+
+- Lower bound for sorthing (Why sorting is bounded by n log n)
+
+	A decision tree compares the size of each elements in an input sequence. 
+	Since every permutation of a sequence can be valid, the tree has n! leaves.
+	And every binary tree of depth d has at most 2^d leaves
+	Thus the worst case time complexity is log(n!) = O(n log n)
+
+- Master Theorem
+
+	T(n) = a T(⌈n/b⌉) + O(n^d)
+
+		  ⌈ d > log b a 	=> O(n^d)
+	T(n)  | d = log b a 	=> O(n^d log b n)
+		  ⌊ d < log b a  	=> O(n ^ (log b a))
+
+	Proof: 
+
+	T(n) <= (c * a^l) * (n/b^l)^d
+		  = (c * n^d) * (a/b^d)^l 
+		  = c * n^d * (1 + a/b^d + (a/b^d)^2 + ... (a/b^d)^(log b n))
+
+		  Divide into cases above from here 
+
+	Variant:
+
+	T(n) = 2 * T(n^1/2) + (log n)
+	-> k = log n
+	T(n) = T(2^k) = 2 * T(2^(k/2)) + O(k) 
+	-> S(k) = T(2^k) 
+	S(k) = 2 * S(k/2) + O(k) 
+	=> S(k) = O(k * log k) = T(2^k) => T(n) = O(log n * log log n)
+
+3. Heaps, Heapsort, Priority Queues 
+
+- Max-Heap: A[i] <= A[⌊i/2⌋]
+
+- Make-Max-Heap(A): Take array A and organizes it into a heap
+
+	Run Max-Heapify on all non-leave nodes
+
+	- Time complexity: O(n) -> Most nodes have small heights
+
+- Max-Heapify(A, i): Transforms the subtree rooted at node i to a max-heap 
+
+	(Assuming that the left/right subtrees at node i are max-heaps)
+
+	- Time Complexity: O(log n)
+
+- Heapsort(A): Sorts a list using heaps
+
+	Make-Max-Heap => Take first element, move to last, decrease heap size by 1 
+		=> Max-Heapify(A, 0) => Repeat
+
+	- Time Complexity: O(n log n) 
+
+- Max Priority Queues: Set of elements, each with an associated value called a key
+
+	- Insert(S, x, k): 			Inserts elements with key k into set S 
+	- Maximum(S): 				Returns elements of S with largest key 
+	- Extract-Max(S): 			Removes and Returns elements of S with largest key 
+	- Increase-Key(S, x, k): 	Increases value of x's key to k 
+
+	Beneficial to implement using Heap -> Both take O(log n)
+
+4. Dynamic Programming
+
+- Optimization Technique where a sequence of subproblems are ordered from smallest to 
+	largest
+
+	- Optimal Substracture: Optimal solution os subproblem can be constructed from 
+		optiaml solution of smaller subproblems
+
+- Change-Making Problem -> O(nv)
+
+	- Make a sum of v from 1 = x1 < x2 < ... < xn, where C[x] denotes number of coins 
+		needed to make x
+
+	- for u in (1 ~ V)
+		C[u] = Min{ C[u - xi] | xi <= u && 1 <= i <= n }  
+
+- Knapsack Problem -> O(nW)
+
+	- Make sum of values of the items within a limited weight the maximum
+
+	- One of each item is available
+
+		- for W in (1 ~ W)
+			K[W] = Max { K[W - wi] + vi | wi <= W && 1 <= i <= n }
+
+	- Multiple of each items are available 
+
+		- Knapsack-Multiple(W, w[1..n], v[1..n])
+
+			for j in (0 ~ n): K[0, j] = 0 
+			for W in (0 ~ W): K[W, 0] = 0
+
+			for j in (1 ~ n) :
+				for W in (1 ~ W):
+					K[W, j] = Max { K[W - wj, j-1] + vj, K[W, j-1] | wj <= W}
+
+- LIS (Longest-Increasing Subsequence)
+
+	- L[j] = length of longest subsequence ending at j
+		L[j] = 1 + Max { L[i] | i < j && ai < aj}
+
+	- We can also add pointers to the previous element of the LIS to find the LIS itself
+
+	- LIS(A) -> O(n^2)
+
+		L[1] = 1, P[1] = NIL 			// Initialize first element
+		k = 1 							// LIS ends at position k
+
+		for i in (2 ~ n):
+			L[i] = 1, P[i] = NIL  		// Initialize variables
+			
+			for j in (1 ~ (i-1)):
+
+				if A[i] > A[j] && L[i] <= L[j]: 	// If invariables are met
+					L[i] = L[j] + 1, P[i] = j 		// Make changes
+
+			if L[j] > L[k]:
+				k = j
+
+		for a = (L[k] ~ 1):
+			B[a] = A[k], k = P[k] 		// Recreate LIS
+
+- DP vs. D&C 
+
+	- Similarities
+
+		- Both break down the problem into smaller parts, and combine them to solve
+			for the larger question
+
+	- Differences 
+
+		- Although both break down the question, DC make it significantly smaller, 
+			and the subproblems do not overlap (do not share same sub-problems)
+
+		- DP is used for optimization, requires question to have optimal structure 
+		- DC is usually not used for optimization	
+
+		- DC dependency of subproblems can be represented as tree, DP as DAG
+
+- Edit Distance
+
+	- Edit (x[1..m], y[1..n]) -> O(mn)
+
+		for i in (0 ~ m) : E[i, 0] = i 
+		for j in (0 ~ n) : E[0, j] = j
+
+		for i in (1 ~ m): 
+			for j in (1 ~ n):
+				E[i, j] = Min { 1 + E[i-1, j] , 1 + E[i, j-1], E[i-1, j-1] + f(i, j)}
+					where f(i, j) = 0 if x[i-1] == y[i-1]] and 1 otherwise
+
+- LIS Improved
+
+5. Graph Decomposition (DFS) -> O(|V| + |E|)
+
+- DFS 
+
+	- DFS(V, E) 
+		for u in V:
+			color[u] = WHITE, pi[u] = WHITE 
+
+		time = 0
+
+		for u in V:
+			if color[u] == WHITE:
+				DFS-VISIT[u]
+
+	- DFS-VISIT[u]
+		time ++
+		d[u] = time 
+		color[u] = GREY 
+
+		for v in Adj[u]:
+			if color[v] == WHITE:
+				pi[v] = u
+				DFS-VISIT[v] 
+		time ++
+		f[u] = time
+		color[u] = BLACK
+
+- DFS-Forest consists of DFS-Trees
+
+- Paranthesis Theorem 
+
+- Classification of Edges: e = (u,v) is...
+
+	- Tree edge: If v is White
+	- Back edge: If v is Grey
+	- Forward edge: If v is Black && Non-Child descendant
+	- Cross edge: If v is Black && Not descendant/Ancestor
+
+- Directed Acyclic Graph
+
+	- Used for topological sort
+
+- Topological Sort -> O(|V| + |E|) (Basically DFS)
+
+	- Inputs DAG(V, E) and outputs vertices in order of decreasing finishing times
+
+- Strongly Connected Components (SCC) 
+
+	- Maximal Set of vertices within a graph where for all u, v in C, if a path from u to v 
+		exists, there exists a path from v to u
+
+	- For a directed graph G, 
+		1. Call DFS(G)
+		2. Compute G^T -> {(u,v) -> (v,u)}
+		3. Call DFS(G^T), in order of decreasing f[u] 
+		4. Output each set of trees formed in the 2nd DFS as separate SCCs
+
+6. Paths in Graphs
+
+- FIFO Queues 
+
+	- Has 3 main functions
+		1. Enqueue(Q, x): Inserts x at the end of the queue
+		2. Dequeue(Q): Returns and removes head of queue 
+		3. isEmpty(Q)
+
+		- Implementation: Linked list with pointer to tail makes all O(1) 
+
+- BFS(V, E, s) -> Search G(V, E) from s , O(|V| + |E|)
+
+	- BFS(V, E, s)
+		d[s] = 0, pi[s] = NIL 
+
+		for u in V \ {s} :
+			d[u] = inf, pi[u] = NIL 
+
+		Q = 0
+		Enqueue(Q, s) 
+
+		while !isEmpty(Q) :
+			u = Dequeue(Q)
+
+			for v in Adj[u]:
+				if d[u] = inf 
+					d[v] = d[u] + 1 
+					pi[v] = u
+					Enqueue(Q, v)
+
+- Dijkstra's Algorithm -> O((|V| + |E|) log |V|)
+
+	- Solves single source shortest path for non-negative weight cycles
+	- Uses min-priority Queue with heap implementation
+
+	- Dijkstra's (V, E, w, s)
+
+		for v in V:
+			d[v] = inf, pi[v] = NIL 			// Initialize all Variables
+
+		d[s] = 0 								// s -> s distance is 0
+
+		Q = Make-Queue(V) with d[v] as keys 	// Make Queue, where all distance = inf
+
+		while !isEmpty(Q):
+
+			u = Extract-Min(Q) 					// O(Log|V|) -> Min-heap implementation
+												   Executed |V| times
+
+			for v in Adj[u]: 					// sum O(|E|)
+				if d[u] + w(u, v) < d[v] 		// Check if weight is smaller
+					d[v] = d[u] + w(u, v) 		// Change
+					pi[v] = u 					// Change
+					Decrease-Key(Q, v, d[v])	// Decrease Key O(log|V|)
+
+		Thus total runtime is O(|V| log |V|) + O(|E| + log|V|) = O((|V| + |E|) log |V|)
+
+- Bellman-Ford Algorithm -> O(|V||E|)
+
+	- Shortest weight path for graph with negative cycles : False
+		Otherwise returns True and d[v], pi[v] for each v in V
+
+	- Bellman-Ford (V, E, w, s)
+
+		for v in V:
+			d[v] = inf, pi[v] = NIL 			// Initialize all Variables
+
+		d[s] = 0 								// s -> s distance is 0
+
+		for i in (|V| - 1): 					// Correctly computes all	
+			for e = (u, v) in E:				   Distances when no negative
+				if d[u] + w(u, v) < d[v] : 		   weight cycles exist
+					d[v] = d[u] + w(u, v)
+					pi[v] = u 
+
+		for e = (u, v) in E 					// Checks for negative weight cycles
+			if d[u] + w(u, v) < d[v] : 
+				return False
+
+- DAG Shortest Path -> O(|V| + |E|)
+
+	- DAG Path (V, E, w, s)
+
+		Topological-Sort(V, E) 
+
+		for v in V:
+			d[v] = inf, pi[v] = NIL 
+
+		d[s] = 0 
+
+		for u in V in topological order
+			for v in Adj[u]: 
+				if d[v] > d[u] + w(u, v): 
+					d[v] = d[u] + w(u, v) 
+					pi[v] = u
+
+- Floyd-Warshall Algorithm -> O(|V|^3)
+
+	- Assumed that no negative cycles exist
+
+	- For V = {1, 2, ..., n}, 
+		d[i, j, k] = length of path i -> j where intermediate nodes are V_k = {1 .. k}
+
+		- Initially d[i, j, 0] = if (i, j) in E then w(i, j) else inf
+
+	- Then if for all i, j, d[i, j, k] is calculated, we can calculate d[i, j, k+1] by
+		d[i, j, k+1] = MIN{d[i, j, k], d[i, k+1, k] + d[k+1, j, k]}
+
+	- Floyd-Warshall (V, E, w)
+
+		for i in |V|; for j in |V|:
+			d[i, j, 0] = inf
+
+		for e in E:
+			d[i, j, 0] = w(i, j)
+
+		for k in (0 .. |V|-1):
+			for i in |V|:
+				for j in |V|:
+					d[i, j, k+1] = MIN{d[i, j, k], d[i, k+1, k] + d[k+1, j, k]}
+
+- Summary of all Graph-Related Shortest Path Algorithms
+
+	- BFS: 
+		- Single Source
+		- w(e) = 1 for all e in E
+		- O(|V| + |E|)
+
+	- Dijkstra's:
+		- Single Source
+		- No negative weights
+		- O((|V| + |E|) log |V|)
+
+	- Bellman-Ford:
+		- Single Source
+		- Checks for negative weight cycles
+		- O(|V| * |E|)
+
+	- DAG:
+		- Single Source
+		- Arbitrary weights in DAGs
+		- O(|V| + |E|)
+
+	- Floyd-Warshall:
+		- All pairs
+		- No negative weight cycles
+		- O(|V|^3)
+
+7. Greedy Algorithms
+
+- At each step of solving a problem, make the choice that offers the greatest immediate 
+	benefit
+
+- MST (Minimum Spanning Tree)
+
+	- A subgraph of G where all nodes are connected, but no cycles exist
+
+	- |V|-1 = |E|
+
+	- Proof: 
+
+- Buliding MSTs -> Prim's vs Kruskals
+
+	- Kruskal's Algorithm
+
+		- Start from A = 0, and at every step, pick the ehde with the smallest weight and add it to A if it does not create cycles.
+
+		- Implemented using disjoint-set data structures
+
+			- Maintains collection S = {S1, S2, ... , Sk} where Si are disjoint dynamic 
+				sets (changing over time)
+
+			- Each set is represented by a representative member of the set
+
+			- Operations
+
+				- Make-Set(x): Makes a new set {x} and adds it to S
+
+				- Union(x, y): Removes Sx, Sy from S and adds {Sx U Sy}
+
+				- Find-Set(u): Returns representative of set containing u
+
+		- Kruskal (V, E, w)
+
+			A = 0 					// Empty set of edges in MST
+
+			for v in V:
+				Make-Set(v) 		// Make each node into independent set
+
+			E_S = Sort E in order of increasing w
+
+			for e = (u, v) in E_S:
+				if Find-Set(u) != Find-Set(v):
+					A = A U {(u, v)} 
+					Union(u, v)
+
+	- Prim's Algorithm
+
+		- Pick node v in V, and grow a tree from that vertex
+
+		- Set S = {r}, A = 0 
+
+			- At every step, find a light edge (u, v) connecting u in S to v in (S \ V)
+			- Update S -> S U {v} and A -> A U {(u, v)}
+
+			- This can be implemented by a priority Queue where
+
+				- Q = V \ S 
+				- Key of v is minimum weight of (u, v), where u < S
+				- To find the light edge from S -> S\V, Extract-Min(Q)
+
+		- Prim (V, E, w, r) -> O(|E| * log |V|)
+
+			Q = 0
+
+			for u in V: 
+				key[u] = inf, pi[u] = NIL, Insert(Q, u) 	//Each vertex has distance inf
+
+			Decrease-Key(Q, r, 0)							// r -> r distance = 0
+
+			while !isEmpty(Q):
+
+				u = Extract-Min(Q) 							// Take min weight edge 
+
+				for v in Adj[u]:							// Similar to Dijkstra
+					if v < Q && w(u, v) < key[v]: 			// 최소값에서 다음 최소값을
+						pi[v] = u 							// 쭉 정렬, 그 이후 찾은 값들
+						Decrease-Key(Q, v, w(u, v)) 		// 중의 최소만 남기고 반복
+
+	- For Dijkstra, Kruskal, and Prim, it really helps to look at example graphs
+
+	- Activity Selection -> O(n log n)
+
+		- Activity-Selection(s, f) // s -> Starting times, f -> Finishing times
+
+			Sort activities in increasing f value
+
+			A = {1}, k = 1
+
+			for j in (2 ~ n):
+				if s[j] >= f[k]:
+					A = A U {j} 
+					k = j
+
+8. Matroids
+
+- A Matroid is a pai (E, I) where E is a finite set and I a family of subsets of E
+
+	- Matroids satisfy 2 main properties
+
+		- Hereditary Property: A < I && B < A => B < I 
+		- Exchange Property: A, B < I && |B| < |A| => Exists a < A - B s.t B U {a} < I 
+
+	- Basis Exchange Property (Steinitz... Hello...)
+
+		- Basis Exchange Property: A, B in {Basis}, a in (A - B) => exists element 
+			b in (B - A) s.t. (A U {b}) - {a} in {Basis}
+		- Double Basis Exchange Property: A, B in {Basis} and a in (A - B) => exists
+			element b in (B - A) s.t (A U {b}) - {a} in {Basis} and (B U {a}) - {b} in {Basis}
+
+	- Graphic Matroids -> for G(V, E), if I is the set of spanning forests (edges)
+		Then (E, I) is a matroid (called a graphic matroid)
+
+	- Traversal Matroids -> 
+
+	- Weighted Matroids -> Associate w(x) for all x in E
+
+		- Finding weighted Matroids uses Greedy Algorithm
+
+			- Greedy (E, I, w): 	-> O(n log n + n f(n))
+
+				A = 0 
+				Sort E in decreasing order by weight
+
+				for e in E:
+					if A U {x} in I: 	// takes f(n) to check
+						A = A U {x}  
+
+				return A
+
+
+9. Stable Sorting
+
+- Example: Hospitals(h) want Students(s), Students want Hospitals
+
+- Unstable pais form when either;
+
+	- h prefers s to one of its admitted students
+	- s prefers h to assigned hospital
+
+- Finding Stable Assignments
+
+	- Gale-Shapley(h, s) -> O(n^2)
+
+		M = 0
+
+		while(exists unmatches h && h hasn't propsed to every student)
+
+		s = #1 on h's unproposed list
+
+		if (s is unmatched): Add h-s to M
+		elif (s prefers h to current h'): replace h'-s with h-s
+		else: s rejects h
+
+		return Stable-Matching M
+
+- The Gale-Shapely Algorithm is truthful for hospitals, as they cannot get a better
+	math by lying, but students can
+
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+Some Important Terms
+
+DC: Divide the problem into subproblems, solve each separately and merge
+
+DP: Express the solution of the original problem as a resursion of similar 
+smaller problems. Then, solve all sub problems that occur during recurson, 
+and combine such solutions
+
+Greedy: Build solution one piece at a time, optimizing each peice separately
+
+Stable Sorting: If A[i] = A[j], A[i] appears before A[j] in original
+=> A[i] appears before A[j] in sorted
+
+T(n): Running time on a problem of size n
+
+Heap: Data structure that organizes data in an essentially complete rooted tree,
+a rooted tree completely filled up except on lowest level, which is filled from left
+until a point
+
+Max-Heap property: A heap is a max heap if key of node is less/equal to parent, 
+A[i] <= A[i/2]
+
+Priority Queue: Abstarct Data Structure for maintaining a set of elements, each with
+an associated value called a key, effieicnt when implemented with heaps
+
+Max-Priority Queue: Priority to elements with larger keys
+Min-Priority Queue: // smaller keys
+
+Optimal Substructure: Optimal solutions of a subproblem can be constructed from optimal
+solutions of smaller subproblems. 
+
+Directed Graph: Set of nodes(V) and edges E < V x V, each edge e being an ordered pair
+(u, v) of nodes. 
+
+Path: <v0, v1, ..., vn> where u = v0 and v = vn, (vi, vi+1) < E
+
+Cycle: v0 = vn, n /= 0, cycle is simple if v1 .. vn are distinct
+
+DAG: Directed graph with no cycles
+
+Undirected: for all e in E, e^T in E
+
+Adjacency Matrix and Adjacency List
+
+DFS: As soon as new vertex is discovered, explore from it
+
+DFS-Forest: Gp = (V, Ep) where Ep = (pi[u], u) for all u in V
+
+DFS-Forest consists of DFS-Trees
+
+Strongly Connceted nodes u and v => exists path(u, v) and path(v, u)
+
+SCC(Strongly Connected Components): SCC of G is maximal set of vertices C
+where all modes of C are SC to each other. 
+
+BFS: From given vertex , find all vertices reachable and for each v in V, BFS finds
+the shortest path from s to v
+
+BFS: Also is single source shortest path problem for unit weight
+
+BFS-Tree: Vertices reachable from s, and edges where (pi[u], u)
+
+Dijkstra: Single Source Shortest Path Problem for non-negative weights
+
+Bellman-Ford: Single Source Shortest Path Problem with arbitrary weight cycles
+
+DAG: Single Source Shortest Path problem for Arbitrary cycles
+
+Floyd-Warshall: All pairs shortest path probkem, no negative weight cycles
+
+Spanning Tree: Subgraph of G with edge set T < E s.t. T is a tree, and for u in V,
+exists v in V s.t. (u, v) or (v, u) is in T
+
+A Minimum spanning Tree is a spanning tree of minimum weight
+
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+Some Important Time Complexities
+
+InsertionSort: O(n^2)
+
+Merge Sort: O(n log n)
+	- Stable
+
+Selection: O(n)
+
+CountingSort: O(n)
+	- Stable
+
+Max-Heapify: O(log n)
+
+Make-Max-Heap: O(n)
+
+Heap-Sort: O(n log n)
+	- Not stable
+
+Change-Making: O(nV)
+
+Knapsack: O(nW)
+
+LIS: O(n^2) -> O(n log r)
+
+Edit-Problem: O(nm)
+
+BFS, DFS: O(|V| + |E|)
+
+Dijkstras: O((|V| + |E|) log|V|)
+
+B-F: O(|V||E|)
+
+DAG: O(|V| + |E|)
+
+F-W: O(|V|^3)
+
+Kruskal: Depends on implementation
+
+Prims: O(|E| log|V|)
+
+Activity-Selection: O(n log n)

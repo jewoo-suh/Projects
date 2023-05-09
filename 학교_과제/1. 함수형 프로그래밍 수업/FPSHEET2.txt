@@ -1,0 +1,249 @@
+3.1
+
+Solving for the definitions of functions 'curry' and 'uncurry', we get
+
+> curry' :: ((a, b) -> c) -> (a -> b -> c)
+> curry' f x y = f (x,y)
+
+> uncurry' :: (a -> b -> c) -> ((a, b) ->c)
+> uncurry' f (x,y) = f x y
+
+Proving that the two functions are mutually inverse, we check the types of curry'(uncurry') = curry'.uncurry' and uncurry'(curry') = uncurry'.curry'
+
+ghci> :t curry1.uncurry1
+curry1.uncurry1 :: (a -> b -> c) -> a -> b -> c
+ghci> :t uncurry1.curry1
+uncurry1.curry1 :: ((a, b) -> c) -> (a, b) -> c
+
+Both functions return the same input and output types, thus showing that they are mutually inverse. 
+
+-------------------------------------------------------------------------------------------------------------------
+
+3.2
+
+In Haskell, given two functions f :: Y -> Z and g :: X -> Y, f(g x) can be expressed as (f . g) x
+We notice that this is happening in the equation h x y = f (g x y), where the functions h and f(g) are identical fucntions receiving inputs of x y. Thus, it can be observed that h = f(g) = (f . g)
+
+(1) True
+As shown above, h = f(g) = (f . g), thus when expressed without any inputs, h = f . g
+
+(2) False
+The difference between h x and f.g x is that 
+For h = f(g), h x = f(g(x)), thus in the function g(x) is evaluated first, and then that value is 'handed over' to the function f - however, since g accepts 2 arguments, not one, h x is left as a function itself 
+However, for f . g x, since functions in haskell are left-associative, f.g is evaluated first. Then, the haskell code treats x as a function, and the remainder of f . g x is also a function
+
+The fundamental difference between h x and f . g x is that unlike h x, f . g x treats x as a function as well, thus differentiating itself from h x
+
+(3) True
+As shown in (1), h = (f . g), thus h x y = (f . g) x y
+
+-------------------------------------------------------------------------------------------------------------------
+
+3.3
+
+(a) []:xs = xs
+ 	This equation is badly typed: Assuming xs is a list of lists, []:xs is the notation of adding [] to xs; [] is an empty list, but this does not mean adding [] to xs will not change xs. Rather, it will add the element [] to xs
+
+ 	(Note: Is a list of lists called a2d array in Haskell?)
+
+(b) [[]] ++ [xs] = [[],xs]
+ 	Type of xs: list
+
+ 	This equation will hold as long as xs is defined as a list of elements; the operator ++ merges the lists of lists on the left side of the equation into one list of lists
+
+ 	Ex) xs = [1,2] [[]] ++ [[1,2]] = [[], [1,2]]
+
+(c)	[[]] ++ xs = [xs]
+	This equation is badly typed: 
+	For the left equation to hold valid, xs has to be a list of lists; However, 
+	for the right equation to hold valid, xs has to be a list and thus [xs] becoming a list of lists
+
+	This is right xs = []
+
+(d) xs:[xs] = [xs,xs]
+	Type of xs: Any number of nested lists
+
+	This equation will hold valid for any type of xs, as the notion of xs:[xs] simply denotes adding the element xs to a list that currently only contains one element of xs, resulting in the formation of a list with elements xs and xs
+
+	Ex) xs = [[1],[2]], [[1],[2]]:[[[1],[2]]] = [[[1],[2]],[[1],[2]]]
+
+(e) xs:[] = [xs]
+	Type of xs: Any number of nested lists
+
+	This equation will hold valid for any type of xs, as the notion of xs:[] simply denotes adding the element xs to an empty, resulting in the formation of a list only xs
+
+	Ex) xs = [[1],[2]], [[1],[2]]:[] = [[[1],[2]]]
+
+(f) []:xs = [[],xs]
+	This equation is badly typed: 
+	For the left equation to hold valid, xs has to be a list of lists; However, 
+	for the right equation to hold valid, xs has to be a list and thus [[],xs] becoming a list of lists
+
+	(Note: Can xs be a tuple of lists?)
+
+(g) [xs] ++ [] = [xs]
+	Type of xs: list -> Everything
+
+	This equation will hold true as long as xs is defined as a list of elements; the operator ++ simply adds [], which is a technically a list of no lists, to [xs], a list of a list of elements. As ++ does not add any value to [xs], [xs] itself is returned as a result
+
+	Ex) [[1,2]] ++ [] = [[1,2]]
+
+(h) [[]] ++ xs = [[],xs]
+	This equation is badly typed: 
+	For the left equation to hold valid, xs has to be a list of lists; However, 
+	for the right equation to hold valid, xs has to be a list and thus [[],xs] becoming a list of lists
+
+(i) [[]] ++ xs = xs
+
+(j) xs:xs = [xs,xs]
+	This equation is badly typed: The notion : is used to add the element on the left of [] to the right of [] and thus the elements on the right has to be a list of the type of elements on the left. However, here xs:xs have same types on both sides.
+
+(k) xs:[] = xs
+	This equation is badly typed: The notion xs:[] adds xs into an empty listand will result in [xs], not xs
+
+(l) [xs] ++ [xs] = [xs,xs]
+	Type of xs: Any number of nested lists
+
+	This equation will hold valid for any type of xs, and will combine two copies of xs into one list
+
+	Ex) xs = [1], [[1]] ++ [[1]] = [[1],[1]]
+
+-------------------------------------------------------------------------------------------------------------------
+
+3.4
+
+> subst f g x = (f x) (g x)
+
+We allocate type variables to each name as below:
+subst :: A
+f :: B
+g :: C
+x :: D
+
+Then, 
+- subst f => A = B -> E
+- subst f g => E = C -> F
+- subst f g x => F = D -> G
+- f x => B = D -> H
+- g x => C = D -> I
+- (f x) (g x) => H = I -> J
+
+And since subst f g x = (f x) (g x), G = J. 
+
+Then, 
+subst :: A = B -> E
+		   = (D -> H) -> C -> F
+		   = (D -> I -> J) -> C -> D -> G
+		   = (D -> I -> J) -> C -> D -> J
+		   = (D -> I -> J) -> (D -> I) -> D -> J
+
+--------------------------------------------------
+
+> fix f = f (fix f)
+
+We allocate type variables to each name as below:
+fix :: A
+f :: B
+
+Then, 
+- fix f => A = B -> C
+- f (fix f) => B = C -> D
+
+And since fix f = f (fix f), C = D. 
+
+Then, 
+fix :: A = B -> C
+		 = (C -> D) -> C
+		 = (C -> C) -> C
+
+--------------------------------------------------
+
+> twice f = f . f
+
+We allocate type variables to each name as below:
+twice :: A
+f :: B
+
+Then, 
+- twice f => A = B -> C
+- f . f => B = B -> D
+
+And since twice f = f . f, C = D. 
+
+Then, 
+twice :: A = B -> C
+		   = (B -> D) -> C
+		   = (B -> C) -> C
+
+--------------------------------------------------
+
+> selfie f = f f
+
+We allocate type variables to each name as below:
+selfie :: A
+f :: B
+
+Then, 
+- selfie f => A = B -> C
+- f f = f(f) => B = B -> D
+
+And since selfie f = f f, C = D. 
+
+Then, 
+twice :: A = B -> C
+		   = (B -> D) -> C
+		   = (B -> C) -> C
+		   = ((B -> D) -> C) -> C
+		   = ((B -> C) -> C) -> C
+
+-------------------------------------------------------------------------------------------------------------------
+
+4.1 
+
+If f and g are strict, f.g is strict. This is because since g is strict, the inputs and outputs of g have to be evaluated(cannot be undefined), and then the evaluated output of g will be sent as the input of f, which will also return a non-undefined value as its ouput, thus making f.g strict as well. 
+
+However, this is not necessarily the case the opposite way around. When f.g is strict, f and g not necessarily have to be strict. g can receive undefined values and still output an evaluated value, such as const 0 undefined = 0, while f can still receive evaluated inputs and output undefined values, such as log 0
+
+-------------------------------------------------------------------------------------------------------------------
+
+4.2
+
+class Eq a => Ord a where
+	(<), (<=), (>), (>=) :: a -> a -> Bool
+	x < y = not (x >= y)
+	x > y = not (x <= y)
+	x >= y = x == y || x > y
+
+instance Eq a => Ord [a] where
+...
+
+I understand that to compare the order of two lists, we first check if they are both empty, and then if one of them are emtpy (in the latter case, we would return that the non-zero list is larger).
+
+Then, we compare the first elements of the lists; then the second; then the third and so on, just as we would when we find a word in a dictionary. 
+
+Finally, if the function above returns == for all elements in both lists, if the elements have different sizes, the bigger one is greater; if they are of same size the elements are identical
+
+-------------------------------------------------------------------------------------------------------------------
+
+3.6 
+
+> units1 :: [String]
+> units1 = ["Zero","One","Two","Three","Four","Five",
+>   		"Six","Seven","Eight","Nine"]
+
+> song :: Int -> String
+> song 0 = ""
+> song n = song (n-1) ++ "\n" ++ verse n
+> verse n = line1 n ++ line ++ line3 n ++ line
+
+> line = "\n" ++ "Went to mow a meadow" ++ "\n"
+
+> line1 :: Int -> String
+> line1 n 
+> 		| n == 1 		= "One man went to mow"
+> 		| otherwise 	= units1!!n ++ " men went to mow"
+
+> line3 :: Int -> String 
+> line3 n 
+> 		| n == 1 		= units1!!1 ++ " man and his dog"
+> 		| otherwise		= units1!!n ++ (map toLower) (" men, " ++ line3 (n-1))

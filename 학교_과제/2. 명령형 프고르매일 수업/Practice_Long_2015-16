@@ -1,0 +1,407 @@
+> import Data.Char
+
+Question 2
+
+(a)
+
+> filter1 :: (a -> Bool) -> [a] -> [a] 
+> filter1 f [] = []
+> filter1 f (x:xs) = if f x then x : filter1 f xs else filter1 f xs
+
+> filter2 :: (a -> Bool) -> [a] -> [a] 
+> filter2 f xs = [ x | x <- xs, f x]
+
+> filter3 :: (a -> Bool) -> [a] -> [a] 
+> filter3 f = foldr (\x xs -> if f x then x:xs else xs) [] 
+
+(b)
+
+> sort :: (Ord a, Ord b) => [(a, b)] -> [(a, b)] 
+> sort xs 	| length xs == 0 		= [] 
+>  			| length xs == 1 		= xs 
+>  			| otherwise 			= merge (sort (take ((length xs) `div` 2) xs)) (sort (drop ((length xs) `div` 2) xs))
+
+> merge :: (Ord a, Ord b) => [(a, b)] -> [(a, b)] -> [(a, b)] 
+> merge xs ys 	| null xs 					= ys 
+>  				| null ys  					= xs 
+> 				| head xs < head ys			= (head xs) : merge (tail xs) ys 
+>  				| head xs == head ys		= (head xs) : (head ys) : merge (tail xs) (tail ys) 
+>  				| head xs > head ys			= (head ys) : merge xs (tail ys)
+
+(c)
+
+Using the Master Theorem we can observe the time complexity of the algorithm above. 
+
+The Master Theorem sttates that if an algorithm breaks a problem T(n) into
+	T(n) = a * T(n/b) + O(^d), 
+If
+	log b a < d => T(n) = O(n^d)
+	log b a = d => T(n) = O(n^d * log b n)
+	log b a > d => T(n) = O(n^log b a)
+
+Here, we notice that from the line
+
+merge (sort (take ((length xs) `div` 2) xs)) (sort (drop ((length xs) `div` 2) xs)), 
+
+sort divides a given problem into 2 parts of half size
+
+We also notice that merge takes a time complexity of O(n), as it iterates through 2 lists
+of size f(n) and merges them together. Thus, 
+
+	T(n) = 2 * T(n/2) + O(n), 
+	log b a = log 2 2 = 1
+	d = 1
+	log b a = d, T(n) = O(n log n)
+
+Thus the algorithm above takes time of O(n log n)
+
+(d)
+
+1. f1 g x = x : f1 g (g x) 
+
+(i) This is the haskell function 'iterate'
+(ii) iterate :: (a -> a) -> a -> [a]
+(iii) It will take O(n) to compute the function, since every time 1 element is appeneded to
+	the final answer list, the algorithm computes g(x) which takes O(1), and this is iterated
+	n times for a final time complexity of O(n)
+
+2. f2 g x = xs where xs = x : map g xs
+
+(i) This is the haskell function 'iterate'
+(ii) iterate :: (a -> a) -> a -> [a]
+(iii) It will take O(n^2) to compute the function, since every time 1 element is appeneded to
+	the final answer list, the algorithm computes map g xs which takes time O(n), and this is 
+	iterated n times for a final time complexity of O(n^2)
+
+
+3. f3 g x = x : map g (f3 g x)
+
+(i) This is the haskell function 'iterate'
+(ii) iterate :: (a -> a) -> a -> [a]
+(iii) It will take O(n^3) to compute the function, since every time 1 element is appeneded to
+	the final answer list, the algorithm computes map g and the f3 again which takes time O(n^3), 
+	and this is iterated n times for a final time complexity of O(n^2)
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+Question3 
+
+(a)
+
+> mapMaybe :: (a -> b) -> Maybe a -> Maybe b
+> mapMaybe _ Nothing = Nothing
+> mapMaybe f (Just x) = (Just (f x))
+
+(b)
+
+> foldMaybe :: (a -> b) -> b -> Maybe a -> b
+> foldMaybe f e Nothing = e 
+> foldMaybe f e (Just x) = f x
+
+(c) 
+
+> type Parse a = String -> Maybe (a, String)
+
+ parseInt :: Parse Int 
+ parseInt xs = if null ys then Nothing else Just (digitToInt(ys), drop (length xs) ys)
+  	where ys = takeWhile (isDigit) xs
+
+(d)
+
+ parseOp :: Parse Char 
+ parseOp (x:xs) 	| x == '+' 			= Just(x, xs) 
+ 				 	| x == '-' 			= Just(x, xs) 
+ 				 	| x == '*' 			= Just(x, xs) 
+ 				 	| x == '/' 			= Just(x, xs) 
+ 				 	| otherwise 		= Nothing
+
+(e)
+
+ eval :: String -> Maybe Int 
+ eval xs = foldMaybe (\(x, y) -> eval2 x y) Nothing (parseInt xs)
+
+ eval2 :: Int -> String -> Maybe Int 
+ eval2 x xs = foldMaybe (\(c, xs) -> eval3 x c xs) Nothing (parseOp xs)
+
+ eval3 :: Int -> Char -> String -> Maybe Int 
+ eval3 x c xs = foldMaybe (\(x2, l) -> eval4 x c x2 l) Nothing (parseInt xs)
+
+ eval4 :: Int -> Char -> Int -> String -> Maybe Int 
+ eval4 x c x2 l 	| not (null l) 			= Nothing 
+  					| c == '+' 				= Just (x + x2)
+  					| c == '-' 				= Just (x - x2)
+  					| c == '*' 				= Just (x * x2)
+  					| c == '/' 				= Just (x `div` x2)
+
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+Question 4
+
+(a)
+
+The type synonym is used to allocate an alias to a specific data type.
+It can be defined as > type (name) (data type) = (data type)
+These are useful as it can help raise the clarity of functions that use certain data types,
+for example, > type Matrix Int = [[Int]] helps the code become more 
+intuituve for people to read.
+
+(b)
+
+> type Point = (Float, Float)
+> type Polygon = [Point]
+
+A polygon can be represented as a list of the points of the vertices of the polygon on 
+a Euclidean space
+
+(c)
+
+> distBetween :: Point -> Point -> Float 
+> distBetween (x1, y1) (x2, y2) = sqrt((x1-x2)^2 + (y1-y2)^2)
+
+(d)
+
+> perimeter1 :: Polygon -> Float 
+> perimeter1 [x] = 0
+> perimeter1 (x:y:xs) = (distBetween x y) + perimeter1 (y:xs)
+
+> perimeter2 :: Polygon -> Float 
+> perimeter2 xs = foldr (\(x,y) e -> e + distBetween x y) 0 ([(xs!!n, xs!!(n+1)) | n <- [0..(length xs -2)]] ++ [(xs!!(length xs - 1), xs!!0)])
+
+(e)
+
+> regular :: Polygon -> Bool 
+> regular [x] = True 
+> regular (x:y:xs) = regular' (y:xs) (distBetween x y)
+
+> regular' :: Polygon -> Float -> Bool
+> regular' [x] _ = True
+> regular' (x:y:xs) lth  	| distBetween x y == lth 	= regular' (y:xs) lth
+>  							| otherwise 				= False
+
+(f)
+
+ centroid :: Polygon -> Point 
+ centroid xs = (((sum . (map fst)) xs) / (length xs), ((sum . (map snd)) xs) / (length xs))
+
+(g)
+
+> translate :: Point -> Polygon -> Polygon 
+> translate pt xs = map (f pt) xs 
+> 	where f p1 p2 = (fst p1 + fst p2, snd p1 + snd p2)
+
+(h)
+
+> rotatePoly :: Polygon -> Float -> Polygon 
+> rotatePoly xs ag = translate cen (map (\(x, y) -> (((cos ag) * x - (sin ag) * y), ((sin ag) * x + (cos ag) * y))) (translate (-(fst cen), -(snd cen)) xs))
+> 	where cen = centroid xs
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+Question 5
+
+(a)
+
+A connected component of an undiredtec graph is a set of vertices within a graph
+that are linked together via nodes (are all reachable from one another via nodes)
+
+(b)
+
+DFS(V, E):
+	
+	time = 0;
+	ccNum = 0;
+
+	for v in V:
+		color[v] = WHITE
+
+	for v in V: 
+		if color[v] == WHITE:
+			DFS-VISIT(v)
+			ccNum ++
+
+DFS-VISIT(u):
+	
+	time ++
+	d[u] = time
+	color[u] = GREY
+	cc[u] = ccNum
+
+	for v in Adj[u]:
+		if color[v] == WHITE:
+			DFS-VISIT(v)
+
+	time ++
+	f[u] = time
+	color[u] = BLACK
+
+We use the fact that when running DFS on a graph, DFS-VISIT is called in the main function
+DFS whenever the algorithm startes traversing through a different DFS-Tree, thus DFS-VISIT
+is called in the main function once for every connected component within a graph
+
+(c)
+
+The run time of DFS is O(|V| + |E|), as DFS-VISIT is called at max |V| times, and througout
+the calls of DFS-VISIT made, the for loop 'for v in Adj[v]' is called at max |E| times, since
+whenever the graph looks for adjacent nodes it calls the edges of the graph, thus the total
+time complexoty of DFS is O(|V| + |E|)
+
+(d)
+
+The purpose of the disjoint set data structure is to track the elements located in
+different connected componenets over a set of nodes. 
+
+Make-Set(v) makes and includes a set with one element, v, into the list of sets
+
+Find-Set(v) finds and returns the representative of the set that contains the element v
+
+Union(u, v) finds the sets with elements u and v, removes them from the list, 
+and adds a new set containing all the elements from both sets into the list
+
+(e)
+
+For two vertices v and u, we could simply run Find-Set(v) == Find-Set(u), which will return
+True if they are in the same set, and False otherwise
+
+(f)
+
+Find-Set is called twice for each edge in E, thus is called 2 * |E| times
+
+Union is called whenever a new vertex is added into a set that will eventually become one of
+the k sets that represent the connected components. Thus, out of the initial |V| sets of 
+single-element sets, k sets will remain, and (|V| - k) vertices will be added into those k
+sets during the runtime of the algorithm. Thus, Union will be called |V| - k times. 
+
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+Question 8
+
+(a)
+
+A spanning tree of a graph is subgraph which consists of G and T < E, where within the 
+spanning tree every node is reachable from every other node.
+
+A Minimum spanning tree is the spanning tree of G where the sum of the weight of the nodes
+is the minimum.
+
+An example of a connected weighted undirected graph with more then one MST is
+
+	1
+a ――――― b
+｜		  ｜
+｜2		｜2
+｜		  ｜
+c ――――― d
+	1
+
+Which has MSTs
+
+	1
+a ――――― b
+｜		
+｜2		
+｜		
+c ――――― d
+	1
+
+	And
+
+	1
+a ――――― b
+		   ｜
+		   ｜2
+		   ｜
+c ――――― d
+	1
+
+(b)
+
+(i) All MSTs have |V| number of nodes, as a spanning tree aims to connect every node
+together with a subset of the total edges.
+
+(ii) All MSTs have |V|-1 number of edges
+
+This is because for a subgraph to span the graph, it must have at least |V|-1 edges
+so that each node is connected -> |E| >= |V|-1 
+
+However, A tree must have at most |V|-1 edges, otherwise cycles will appear and the subgraph
+will no longer be a tree -> |E| <= |V|-1
+
+Thus all in all, |E| = |V|-1, and every MST for G has the same number of edges
+
+(iii) False: Example
+
+Above in the graph
+
+	1
+a ――――― b
+｜		  ｜
+｜2		｜2
+｜		  ｜
+c ――――― d
+	1
+
+The shortest way from b -> d has weight 2, but in the MST
+
+	1
+a ――――― b
+｜		
+｜2		
+｜		
+c ――――― d
+	1
+
+The shortest way from b -> d has weight 5 > 2. 
+
+(c)
+
+For Pseudocode:
+
+Prim (V, E, s, w):
+
+	Q = 0
+
+	for v in V:
+		d[v] = inf 
+		pi[v] = NIL
+		Enqueue(Q, v, d[v])
+
+	DECREASE-KEY(Q, s, 0)
+	pi[s] = NIL
+
+	MST = []
+
+	ENQUEUE(Q, s, d[s])
+
+	while !isEmpty(Q):
+
+		u = EXTRACT-MIN(Q)
+
+		if pi[u] != NIL:
+			MST = MST ++ [(pi[u], u)]
+
+		for v in Adj[u]:
+			if d[u] + w(u, v) < d[v] && (v in Q):
+				pi[v] = u 
+				DECREASE-KEY(Q, v, w(u, v))
+
+
+Prim's Algorithm is a greedy algorithm that, for a given graph input(G, E), 
+a starting node s, and w: E -> R (a function whcih returns the weight of each edge), 
+grows a Minimal Spanning Tree (MST) from the node s for the graph G. 
+
+It runs by 'scanning' for all the edges that start from s, and find the one with minimum 
+weight. It adds it to the collection of edges for the MST. 
+
+The role of the Priority Queue in this procedure is to efficiently hold the values
+of each edge, its proceeder, and the weight of the edge from its proceeder to the edge.
+
+Then for each iteration, the Queue can efficiently select the node with the least 
+weight, add the edge with that weight (=(pi[u], u)) to the MST collection, and 
+find for the next adjacent nodes from that node and update their values.
+
+(d)
+
+The time complexity of Prim's Algorithm is O(|E| * log |V|), since in the while loop, 
+the while loop essentially runs |V| times (as for each iteration 1 element is extracted
+from the Queue, and the Queue has |V| elements total), and during the while loop the 
+'for v in Adj[v]' essentially traverses through the list of edges. During the while loop, 
+the for loop calls Decrease-Key maximum once, and the time complexity of Decrease-key is
+O(log |V|) when a binary heap implementation is used. Thus, the total time complexity
+of the algorithm is O(|E| * log |V|)
